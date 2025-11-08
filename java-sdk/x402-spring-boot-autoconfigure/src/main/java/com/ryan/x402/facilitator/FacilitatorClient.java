@@ -1,6 +1,7 @@
 package com.ryan.x402.facilitator;
 
 import com.ryan.x402.model.Kind;
+import com.ryan.x402.model.PaymentPayload;
 import com.ryan.x402.model.PaymentRequirements;
 import com.ryan.x402.model.SettlementResponse;
 import com.ryan.x402.model.VerificationResponse;
@@ -15,13 +16,13 @@ public interface FacilitatorClient {
   /**
    * Verifies a payment header against the given requirements.
    *
-   * @param paymentHeader the X-402 payment header to verify
+   * @param paymentPayload the X-402 payment header to verify
    * @param req           the payment requirements to validate against
    * @return verification response indicating if payment is valid
    * @throws IOException          if HTTP request fails or returns non-200 status
    * @throws InterruptedException if the request is interrupted
    */
-  VerificationResponse verify(String paymentHeader,
+  VerificationResponse verify(PaymentPayload paymentPayload,
       PaymentRequirements req)
       throws IOException, InterruptedException;
 

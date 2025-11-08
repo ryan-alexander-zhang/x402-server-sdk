@@ -85,7 +85,7 @@ public class X402Interceptor implements HandlerInterceptor {
         return false;
       }
 
-      vr = facilitator.verify(header, requirements);
+      vr = facilitator.verify(payload, requirements);
     } catch (IllegalArgumentException ex) {
       respond402(response, requirements, "malformed X-PAYMENT header");
       return false;

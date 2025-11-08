@@ -2,6 +2,7 @@ package com.ryan.x402.facilitator;
 
 
 import com.ryan.x402.model.Kind;
+import com.ryan.x402.model.PaymentPayload;
 import com.ryan.x402.model.PaymentRequirements;
 import com.ryan.x402.model.SettlementResponse;
 import com.ryan.x402.model.VerificationResponse;
@@ -43,13 +44,13 @@ public class HttpFacilitatorClient implements FacilitatorClient {
   /* ------------------------------------------------ verify ------------- */
 
   @Override
-  public VerificationResponse verify(String paymentHeader,
+  public VerificationResponse verify(PaymentPayload paymentPayload,
       PaymentRequirements req)
       throws IOException, InterruptedException {
 
     Map<String, Object> body = Map.of(
         "x402Version", 1,
-        "paymentHeader", paymentHeader,
+        "paymentPayload", paymentPayload,
         "paymentRequirements", req
     );
 
