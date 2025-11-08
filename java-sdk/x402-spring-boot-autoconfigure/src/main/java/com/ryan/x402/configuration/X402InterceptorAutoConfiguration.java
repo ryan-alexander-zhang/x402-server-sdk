@@ -16,7 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ConditionalOnClass(WebMvcConfigurer.class)
 @EnableConfigurationProperties(X402Configuration.class)
 @ConditionalOnProperty(prefix = "x402", name = "enabled", havingValue = "true")
-public class X402InterceptorAutoConfiguration implements WebMvcConfigurer {
+public class X402InterceptorAutoConfiguration {
 
   private final X402Configuration properties;
   private final FacilitatorClient facilitatorClient;
@@ -37,14 +37,24 @@ public class X402InterceptorAutoConfiguration implements WebMvcConfigurer {
     return new HttpFacilitatorClient(props.getFacilitatorBaseUrl());
   }
 
-  @Override
-  public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(new X402Interceptor(
-        properties.getDefaultPayTo(),
-        properties.getNetwork(),
-        properties.getAsset(),
-        properties.getMaxTimeoutSeconds(),
-        facilitatorClient
-    ));
+  @Bean
+  public WebMvcConfigurer x402WebMvcConfigurer(
+      X402Configuration properties,
+      FacilitatorClient facilitatorClient
+  ) {
+    return new WebMvcConfigurer() {
+      @Override
+      public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new X402Interceptor(
+            properties.getDefaultPayTo(),
+            properties.getNetwork(),
+            properties.getAsset(),
+            properties.getMaxTimeoutSeconds(),
+            facilitatorClient
+        ));
+      }
+    };
   }
+
+
 }
