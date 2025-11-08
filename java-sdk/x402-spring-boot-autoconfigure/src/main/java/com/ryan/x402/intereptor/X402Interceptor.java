@@ -39,10 +39,7 @@ public class X402Interceptor implements HandlerInterceptor {
   private final int maxTimeoutSeconds;  // e.g. 30
   private final FacilitatorClient facilitator;
 
-  public X402Interceptor(String defaultPayTo,
-      String network,
-      String asset,
-      int maxTimeoutSeconds,
+  public X402Interceptor(String defaultPayTo, String network, String asset, int maxTimeoutSeconds,
       FacilitatorClient facilitator) {
     this.defaultPayTo = Objects.requireNonNull(defaultPayTo);
     this.network = Objects.requireNonNull(network);
@@ -54,9 +51,8 @@ public class X402Interceptor implements HandlerInterceptor {
   /* ======================== preHandle: /verify ======================== */
 
   @Override
-  public boolean preHandle(HttpServletRequest request,
-      HttpServletResponse response,
-      Object handler) throws Exception {
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+      throws Exception {
 
     X402Payment annotation = resolveAnnotation(handler);
     // Non-payment endpoint, skip
@@ -78,12 +74,6 @@ public class X402Interceptor implements HandlerInterceptor {
 
     try {
       payload = PaymentPayload.fromHeader(header);
-
-      // check resource and path math
-      if (!Objects.equals(payload.payload.get("resource"), path)) {
-        respond402(response, requirements, "resource mismatch");
-        return false;
-      }
 
       vr = facilitator.verify(payload, requirements);
     } catch (IllegalArgumentException ex) {
@@ -114,17 +104,13 @@ public class X402Interceptor implements HandlerInterceptor {
   /* ======================== afterCompletion: /settle ======================== */
 
   @Override
-  public void afterCompletion(HttpServletRequest request,
-      HttpServletResponse response,
-      Object handler,
-      @Nullable Exception ex) throws Exception {
+  public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
+      Object handler, @Nullable Exception ex) throws Exception {
 
-    PaymentRequirements requirements =
-        (PaymentRequirements) request.getAttribute(ATTR_REQUIREMENTS);
-    String header =
-        (String) request.getAttribute(ATTR_HEADER);
-    PaymentPayload payload =
-        (PaymentPayload) request.getAttribute(ATTR_PAYLOAD);
+    PaymentRequirements requirements = (PaymentRequirements) request.getAttribute(
+        ATTR_REQUIREMENTS);
+    String header = (String) request.getAttribute(ATTR_HEADER);
+    PaymentPayload payload = (PaymentPayload) request.getAttribute(ATTR_PAYLOAD);
 
     // Non-payment endpoint or verification didn't pass, skip
     if (requirements == null || header == null || payload == null) {
@@ -140,9 +126,7 @@ public class X402Interceptor implements HandlerInterceptor {
       SettlementResponse sr = facilitator.settle(header, requirements);
       if (sr == null || !sr.success) {
         if (!response.isCommitted()) {
-          String errorMsg = (sr != null && sr.error != null)
-              ? sr.error
-              : "settlement failed";
+          String errorMsg = (sr != null && sr.error != null) ? sr.error : "settlement failed";
           respond402(response, requirements, errorMsg);
         }
         return;
@@ -214,9 +198,8 @@ public class X402Interceptor implements HandlerInterceptor {
     return pr;
   }
 
-  private void respond402(HttpServletResponse resp,
-      PaymentRequirements requirements,
-      String error) throws IOException {
+  private void respond402(HttpServletResponse resp, PaymentRequirements requirements, String error)
+      throws IOException {
 
     if (resp.isCommitted()) {
       return;
@@ -235,8 +218,7 @@ public class X402Interceptor implements HandlerInterceptor {
     resp.flushBuffer();
   }
 
-  private void respond500(HttpServletResponse resp,
-      String message) throws IOException {
+  private void respond500(HttpServletResponse resp, String message) throws IOException {
 
     if (resp.isCommitted()) {
       return;
@@ -245,31 +227,23 @@ public class X402Interceptor implements HandlerInterceptor {
     resp.resetBuffer();
     resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     resp.setContentType("application/json");
-    resp.getWriter()
-        .write("{\"error\":\"" + message.replace("\"", "\\\"") + "\"}");
+    resp.getWriter().write("{\"error\":\"" + message.replace("\"", "\\\"") + "\"}");
     resp.flushBuffer();
   }
 
   private String createPaymentResponseHeader(SettlementResponse sr, String payer) throws Exception {
-    SettlementResponseHeader settlementHeader = new SettlementResponseHeader(
-        true,
-        sr.txHash != null ? sr.txHash : "",
-        sr.networkId != null ? sr.networkId : "",
-        payer
-    );
+    SettlementResponseHeader settlementHeader = new SettlementResponseHeader(true,
+        sr.txHash != null ? sr.txHash : "", sr.networkId != null ? sr.networkId : "", payer);
 
     String jsonString = Json.MAPPER.writeValueAsString(settlementHeader);
-    return Base64.getEncoder()
-        .encodeToString(jsonString.getBytes(StandardCharsets.UTF_8));
+    return Base64.getEncoder().encodeToString(jsonString.getBytes(StandardCharsets.UTF_8));
   }
 
   private String extractPayerFromPayload(PaymentPayload payload) {
     try {
-      ExactSchemePayload exactPayload =
-          Json.MAPPER.convertValue(payload.payload, ExactSchemePayload.class);
-      return exactPayload.authorization != null
-          ? exactPayload.authorization.from
-          : null;
+      ExactSchemePayload exactPayload = Json.MAPPER.convertValue(payload.payload,
+          ExactSchemePayload.class);
+      return exactPayload.authorization != null ? exactPayload.authorization.from : null;
     } catch (Exception ex) {
       try {
         Object authorization = payload.payload.get("authorization");
