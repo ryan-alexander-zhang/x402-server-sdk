@@ -82,16 +82,19 @@ public class X402Interceptor implements HandlerInterceptor {
 
       vr = facilitator.verify(payload, requirements);
     } catch (IllegalArgumentException ex) {
-      log.error("x402 URL called with invalid payment URL: {} header: {}", request.getRequestURL().toString(), header, ex);
+      log.error("x402 URL called with invalid payment URL: {} header: {}",
+          request.getRequestURL().toString(), header, ex);
       respond402(response, requirements, "malformed X-PAYMENT header");
       return false;
     } catch (IOException ex) {
-      log.error("x402 URL communication error with facilitator URL: {} header: {}", request.getRequestURL().toString(), header, ex);
+      log.error("x402 URL communication error with facilitator URL: {} header: {}",
+          request.getRequestURL().toString(), header, ex);
       // communication error with facilitator
       respond500(response, "Payment verification failed: " + ex.getMessage());
       return false;
     } catch (Exception ex) {
-      log.error("x402 URL internal error URL: {} header: {}", request.getRequestURL().toString(), header, ex);
+      log.error("x402 URL internal error URL: {} header: {}", request.getRequestURL().toString(),
+          header, ex);
       respond500(response, "Internal server error during payment verification");
       return false;
     }
@@ -139,26 +142,31 @@ public class X402Interceptor implements HandlerInterceptor {
       if (sr == null || !sr.success) {
         if (!response.isCommitted()) {
           String errorMsg = (sr != null && sr.error != null) ? sr.error : "settlement failed";
-          log.error("x402 settlement failed URL: {} header: {} error: {}", request.getRequestURL().toString(), header, errorMsg);
+          log.error("x402 settlement failed URL: {} header: {} error: {}",
+              request.getRequestURL().toString(), header, errorMsg);
           respond402(response, requirements, errorMsg);
         }
         return;
       }
 
       try {
+        log.info("x402 settlement succeeded URL: {} header: {} txHash: {}",
+            request.getRequestURL().toString(), header, sr.txHash);
         String payer = extractPayerFromPayload(payload);
         String base64Header = createPaymentResponseHeader(sr, payer);
         response.setHeader("X-PAYMENT-RESPONSE", base64Header);
         response.setHeader("Access-Control-Expose-Headers", "X-PAYMENT-RESPONSE");
       } catch (Exception buildEx) {
-        log.error("x402 settlement error creating response header URL: {} header: {}", request.getRequestURL().toString(), header, buildEx);
+        log.error("x402 settlement error creating response header URL: {} header: {}",
+            request.getRequestURL().toString(), header, buildEx);
         if (!response.isCommitted()) {
           respond500(response, "Failed to create settlement response header");
         }
       }
 
     } catch (Exception e) {
-      log.error("x402 settlement error URL: {} header: {}", request.getRequestURL().toString(), header, e);
+      log.error("x402 settlement error URL: {} header: {}", request.getRequestURL().toString(),
+          header, e);
       if (!response.isCommitted()) {
         respond402(response, requirements, "settlement error: " + e.getMessage());
       }
