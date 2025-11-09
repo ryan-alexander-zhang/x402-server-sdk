@@ -5,6 +5,18 @@ x402-server-sdk 是一个基于 Spring Boot 的服务端 SDK，包含通用模�
 
 ## 快速开始
 
+### 0. 本地安装
+1. 先克隆项目到本地：
+   ```sh
+   git clone <你的仓库地址>
+   ```
+2. 进入项目目录并安装到本地 Maven 仓库：
+   ```sh
+   cd x402-server-sdk
+   mvn install
+   ```
+3. 在你的 Spring Boot 项目的 `pom.xml` 中添加如下依赖（见下方）。
+
 ### 1. 添加依赖
 在你的 Spring Boot 项目的 `pom.xml` 中添加如下依赖：
 ```xml
