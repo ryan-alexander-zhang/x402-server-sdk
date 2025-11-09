@@ -135,7 +135,7 @@ public class X402Interceptor implements HandlerInterceptor {
     }
 
     try {
-      SettlementResponse sr = facilitator.settle(header, requirements);
+      SettlementResponse sr = facilitator.settle(payload, requirements);
       if (sr == null || !sr.success) {
         if (!response.isCommitted()) {
           String errorMsg = (sr != null && sr.error != null) ? sr.error : "settlement failed";

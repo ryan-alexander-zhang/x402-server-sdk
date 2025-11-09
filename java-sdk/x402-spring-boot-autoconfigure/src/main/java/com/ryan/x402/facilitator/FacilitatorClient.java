@@ -35,7 +35,7 @@ public interface FacilitatorClient {
    * @throws IOException          if HTTP request fails or returns non-200 status
    * @throws InterruptedException if the request is interrupted
    */
-  SettlementResponse settle(String paymentHeader,
+  SettlementResponse settle(PaymentPayload paymentHeader,
       PaymentRequirements req)
       throws IOException, InterruptedException;
 

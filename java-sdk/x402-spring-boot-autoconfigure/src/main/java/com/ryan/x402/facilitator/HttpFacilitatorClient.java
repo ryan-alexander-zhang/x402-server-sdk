@@ -71,13 +71,13 @@ public class HttpFacilitatorClient implements FacilitatorClient {
   /* ------------------------------------------------ settle ------------- */
 
   @Override
-  public SettlementResponse settle(String paymentHeader,
+  public SettlementResponse settle(PaymentPayload paymentPayload,
       PaymentRequirements req)
       throws IOException, InterruptedException {
 
     Map<String, Object> body = Map.of(
         "x402Version", 1,
-        "paymentHeader", paymentHeader,
+        "paymentPayload", paymentPayload,
         "paymentRequirements", req
     );
 
