@@ -125,6 +125,10 @@ public class X402Interceptor implements HandlerInterceptor {
       return;
     }
 
+    if (response.getStatus() >= 400) {
+      return;
+    }
+
     PaymentRequirements requirements = (PaymentRequirements) request.getAttribute(
         ATTR_REQUIREMENTS);
     String header = (String) request.getAttribute(ATTR_HEADER);
