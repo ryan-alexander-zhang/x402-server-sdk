@@ -119,6 +119,11 @@ public class X402Interceptor implements HandlerInterceptor {
   @Override
   public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
       Object handler, @Nullable Exception ex) throws Exception {
+    X402Payment annotation = resolveAnnotation(handler);
+    // Non-payment endpoint, skip
+    if (annotation == null) {
+      return;
+    }
 
     PaymentRequirements requirements = (PaymentRequirements) request.getAttribute(
         ATTR_REQUIREMENTS);
@@ -139,6 +144,8 @@ public class X402Interceptor implements HandlerInterceptor {
 
     try {
       SettlementResponse sr = facilitator.settle(payload, requirements);
+      log.info("x402 settlement response URL: {} header: {} response: {}",
+          request.getRequestURL().toString(), header, Json.MAPPER.writeValueAsString(sr));
       if (sr == null || !sr.success) {
         if (!response.isCommitted()) {
           String errorMsg = (sr != null && sr.error != null) ? sr.error : "settlement failed";
@@ -150,8 +157,6 @@ public class X402Interceptor implements HandlerInterceptor {
       }
 
       try {
-        log.info("x402 settlement succeeded URL: {} header: {} txHash: {}",
-            request.getRequestURL().toString(), header, sr.txHash);
         String payer = extractPayerFromPayload(payload);
         String base64Header = createPaymentResponseHeader(sr, payer);
         response.setHeader("X-PAYMENT-RESPONSE", base64Header);
